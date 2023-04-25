@@ -44,6 +44,8 @@ uint8_t mosfetOutSlave = 0;
 uint8_t beepsBackwards = 0;
 uint8_t activateWeakening = 0;
 
+EspSoftwareSerial::UART myPort;
+
 void SendBuffer(uint8_t buffer[], uint8_t length);
 uint16_t CalcCRC(uint8_t *ptr, int count);
 
@@ -52,16 +54,16 @@ uint16_t CalcCRC(uint8_t *ptr, int count);
 //----------------------------------------------------------------------------
 void InitSteeringSerial(void)
 {
-  // Set up serial communication
-  Serial.begin(19200);
+  // Set up serial communication to hoverboard
+  myPort.begin(19200, SWSERIAL_8N1, SERIAL_RX, SERIAL_TX, false);
 }
 
 //----------------------------------------------------------------------------
 // Sets the speed value
 //----------------------------------------------------------------------------
-void SetSpeed(uint16_t data, float factor)
+void SetSpeed(int16_t tempValue, float factor)
 {
-  int16_t tempValue = ((float)data * 2 ) - 3000.0;  // Value -1000 to 1000
+  // int16_t tempValue = ((float)data * 2 ) - 3000.0;  // Value -1000 to 1000
   tempValue *= factor;
   tempValue = CLAMP(tempValue, -1000, 1000);        // Avoid calculation failure
   speedValue = tempValue;
@@ -70,9 +72,9 @@ void SetSpeed(uint16_t data, float factor)
 //----------------------------------------------------------------------------
 // Sets the steering value
 //----------------------------------------------------------------------------
-void SetSteer(uint16_t data)
+void SetSteer(int16_t tempValue)
 {
-  int16_t tempValue = ((float)data * 2 ) - 3000.0;  // Value -1000 to 1000
+  // int16_t tempValue = ((float)data * 2 ) - 3000.0;  // Value -1000 to 1000
   tempValue = CLAMP(tempValue, -1000, 1000);        // Avoid calculation failure
   if (speedValue < 0)
   {
@@ -166,6 +168,7 @@ void SendBuffer(uint8_t buffer[], uint8_t length)
 
   for(; index < length; index++)
   {
+    myPort.write(buffer[index]);
     Serial.write(buffer[index]);
   }
 }
@@ -175,7 +178,24 @@ void SendBuffer(uint8_t buffer[], uint8_t length)
 //----------------------------------------------------------------------------
 void SendDebug()
 {
+  Serial.print("debug: ");
   Serial.print(speedValue);
-  Serial.print(",");
+  Serial.print(", ");
   Serial.println(steerValue);
+}
+
+void SerialLoop()
+{
+  SendDebug();
+  SendAnswer();
+  // // Reply only when you receive data
+  // if (myPort.available() > 0)
+  // {
+  //   Serial.print("available");
+  //   char character = myPort.read();
+  //   if (character == '\n')
+  //   {
+  //     SendAnswer();
+  //   }
+  // }
 }

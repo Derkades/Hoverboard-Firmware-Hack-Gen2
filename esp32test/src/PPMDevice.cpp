@@ -38,6 +38,8 @@ void setup()
   // Initialize steering serial
   InitSteeringSerial();
 
+  Serial.begin(115200);
+
   // Enable Debug LED
   pinMode(LED_BUILTIN, OUTPUT);
   digitalWrite(LED_BUILTIN, 1);
@@ -65,15 +67,11 @@ void loop()
   SetSpeed(200, 1);
   SetSteer(0);
 
+  // SendDebug();
+
+  SerialLoop();
+
 /*  SendDebug(); */
 
-  // Reply only when you receive data
-  if (Serial.available() > 0)
-  {
-    char character = Serial.read();
-    if (character == '\n')
-    {
-      SendAnswer();
-    }
-  }
+
 }

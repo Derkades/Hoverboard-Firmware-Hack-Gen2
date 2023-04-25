@@ -31,7 +31,11 @@
 #ifndef STEERINGSERIAL_H
 #define STEERINGSERIAL_H
 
+#define SERIAL_RX 3
+#define SERIAL_TX 5
+
 #include <Arduino.h>
+#include <SoftwareSerial.h>
 #include <inttypes.h>
 #include "utils.h"
 
@@ -43,12 +47,12 @@ void InitSteeringSerial(void);
 //----------------------------------------------------------------------------
 // Sets the speed value
 //----------------------------------------------------------------------------
-void SetSpeed(uint16_t data, float factor);
+void SetSpeed(int16_t data, float factor);
 
 //----------------------------------------------------------------------------
 // Sets the steering value
 //----------------------------------------------------------------------------
-void SetSteer(uint16_t data);
+void SetSteer(int16_t data);
 
 //----------------------------------------------------------------------------
 // Sends answer to master device
@@ -60,5 +64,7 @@ void SendAnswer(void);
 // Sends debug infos
 //----------------------------------------------------------------------------
 void SendDebug();
+
+void SerialLoop();
 
 #endif
