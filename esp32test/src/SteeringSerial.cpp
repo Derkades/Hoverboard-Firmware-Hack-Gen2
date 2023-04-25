@@ -187,15 +187,16 @@ void SendDebug()
 void SerialLoop()
 {
   SendDebug();
-  SendAnswer();
-  // // Reply only when you receive data
-  // if (myPort.available() > 0)
-  // {
-  //   Serial.print("available");
-  //   char character = myPort.read();
-  //   if (character == '\n')
-  //   {
-  //     SendAnswer();
-  //   }
-  // }
+  // SendAnswer();
+
+  if (myPort.available() > 0) {
+    Serial.print("available");
+    char character = myPort.read();
+    Serial.print("received char: ");
+    Serial.print((int) character);
+    Serial.println();
+    if (character == '\n') {
+      SendAnswer();
+    }
+  }
 }

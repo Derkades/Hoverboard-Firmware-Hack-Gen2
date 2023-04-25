@@ -41,37 +41,14 @@ void setup()
   Serial.begin(115200);
 
   // Enable Debug LED
-  pinMode(LED_BUILTIN, OUTPUT);
-  digitalWrite(LED_BUILTIN, 1);
-
-  // Initialize RC receiver
-  // InitRCReceiver();
-
-  // Start RC receiver
-  // RCReceiverStart();
+  // pinMode(LED_BUILTIN, OUTPUT);
+  // digitalWrite(LED_BUILTIN, 1);
 }
 
 void loop()
 {
-  // uint16_t channel1 = GetRCValue(0);
-  // uint16_t channel2 = GetRCValue(1);
-  // uint16_t channel3 = GetRCValue(2);
-
-  // Activate/deactivate speed mode
-  // float factor = channel3 < 1500 ? 0.5 : 1;
-
-  // Handle receiver values
-  // SetSpeed(channel1, factor);
-  // SetSteer(channel2);
-
   SetSpeed(200, 1);
   SetSteer(0);
 
-  // SendDebug();
-
   SerialLoop();
-
-/*  SendDebug(); */
-
-
 }
