@@ -445,7 +445,7 @@ void USART_MasterSlave_init(void)
 //----------------------------------------------------------------------------
 void USART_Steer_COM_init(void)
 {
-		// Enable ADC and DMA clock
+	// Enable ADC and DMA clock
 	rcu_periph_clock_enable(RCU_USART0);
 	rcu_periph_clock_enable(RCU_DMA);
 

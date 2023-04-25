@@ -1,7 +1,7 @@
 /*
-* This file is part of the hoverboard-firmware-hack-V2 project. The 
+* This file is part of the hoverboard-firmware-hack-V2 project. The
 * firmware is used to hack the generation 2 board of the hoverboard.
-* These new hoverboards have no mainboard anymore. They consist of 
+* These new hoverboards have no mainboard anymore. They consist of
 * two Sensorboards which have their own BLDC-Bridge per Motor and an
 * ARM Cortex-M3 processor GD32F130C8.
 *
@@ -10,8 +10,8 @@
 * Copyright (C) 2018 Kai Liebich
 * Copyright (C) 2018 Christoph Lehnert
 *
-* The program is based on the hoverboard project by Niklas Fauth. The 
-* structure was tried to be as similar as possible, so that everyone 
+* The program is based on the hoverboard project by Niklas Fauth. The
+* structure was tried to be as similar as possible, so that everyone
 * could find a better way through the code.
 *
 * This program is free software: you can redistribute it and/or modify
@@ -40,6 +40,7 @@
 
 // Only slave communicates over bluetooth
 #ifdef SLAVE
+#ifdef ENABLE_BLUETOOTH
 // Variables which will be send over bluetooth
 extern float currentDC;
 extern float realSpeed;
@@ -63,7 +64,7 @@ void SendBluetoothDevice(uint8_t identifier, int16_t value);
 void UpdateUSARTBluetoothInput(void)
 {
 	uint8_t character = usartSteer_COM_rx_buf[0];
-	
+
 	// Start character is captured, start record
 	if (character == '/')
 	{
@@ -75,12 +76,12 @@ void UpdateUSARTBluetoothInput(void)
 	{
 		sUSARTBluetoothRecordBuffer[sUSARTBluetoothRecordBufferCounter] = character;
 		sUSARTBluetoothRecordBufferCounter++;
-		
+
 		if (sUSARTBluetoothRecordBufferCounter >= USART_BLUETOOTH_RX_BYTES)
 		{
 			sUSARTBluetoothRecordBufferCounter = 0;
 			sBluetoothRecord = 0;
-			
+
 			// Check input
 			CheckUSARTBluetoothInput (sUSARTBluetoothRecordBuffer);
 		}
@@ -102,22 +103,22 @@ void CheckUSARTBluetoothInput(uint8_t USARTBuffer[])
 	int16_t digit4 = 0;
 	int16_t digit5 = 0;
 	int16_t value = 0;
-	
+
 	// Check start and stop character
 	if ( USARTBuffer[0] != '/' ||
 		USARTBuffer[USART_BLUETOOTH_RX_BYTES - 1] != '\n')
 	{
 		return;
 	}
-	
+
 	// Calculate identifier (number 0-99)
 	digit1 = (USARTBuffer[1] - '0') * 10;
 	digit2 = (USARTBuffer[2] - '0');
 	identifier = digit1 + digit2;
-	
+
 	// Calculate read or write access (0 - read, 1 - write)
 	readWrite = USARTBuffer[3] - '0';
-	
+
 	// If read mode, answer with correct value
 	if (readWrite == 0)
 	{
@@ -184,7 +185,7 @@ void CheckUSARTBluetoothInput(uint8_t USARTBuffer[])
 				value = GetSpeedStrobe();
 				break;
 		}
-		
+
 		// Send Answer
 		SendBluetoothDevice(identifier, value);
 	}
@@ -199,7 +200,7 @@ void CheckUSARTBluetoothInput(uint8_t USARTBuffer[])
 		digit4 = (USARTBuffer[8] - '0') * 10;
 		digit5 = (USARTBuffer[9] - '0');
 		value = sign * (digit1 + digit2 + digit3 + digit4 + digit5);
-		
+
 		switch(identifier)
 		{
 			case 5:
@@ -257,7 +258,7 @@ void SendBluetoothDevice(uint8_t identifier, int16_t value)
 	int index = 0;
 	char charVal[5];
 	uint8_t buffer[USART_BLUETOOTH_TX_BYTES];
-	
+
 	// Send bluetooth frame
 	buffer[index++] = '/';
 	sprintf(charVal, "%02d", identifier);
@@ -272,8 +273,9 @@ void SendBluetoothDevice(uint8_t identifier, int16_t value)
 	buffer[index++] = charVal[3];
 	buffer[index++] = charVal[4];
 	buffer[index++] = '\n';
-	
+
 	SendBuffer(USART_STEER_COM, buffer, index);
 }
 
-#endif
+#endif // ENABLE_BLUETOOTH
+#endif // SLAVE
