@@ -48,7 +48,7 @@ void setup()
 void loop()
 {
   SetSpeed(200, 1);
-  SetSteer(0);
+  SetSteer(100);
 
   SerialLoop();
 }

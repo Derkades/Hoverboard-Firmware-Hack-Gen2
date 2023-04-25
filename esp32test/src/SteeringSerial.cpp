@@ -35,11 +35,11 @@
 //----------------------------------------------------------------------------
 int32_t speedValue = 0;
 int32_t steerValue = 0;
-uint8_t upperLEDMaster = 0;
-uint8_t lowerLEDMaster = 0;
+uint8_t upperLEDMaster = 1;
+uint8_t lowerLEDMaster = 1;
 uint8_t mosfetOutMaster = 0;
-uint8_t upperLEDSlave = 0;
-uint8_t lowerLEDSlave = 0;
+uint8_t upperLEDSlave = 1;
+uint8_t lowerLEDSlave = 1;
 uint8_t mosfetOutSlave = 0;
 uint8_t beepsBackwards = 0;
 uint8_t activateWeakening = 0;
@@ -88,6 +88,12 @@ void SetSteer(int16_t tempValue)
 //----------------------------------------------------------------------------
 void SendAnswer(void)
 {
+  Serial.print("SendAnswer: ");
+  Serial.print(speedValue);
+  Serial.print(" ");
+  Serial.print(steerValue);
+  Serial.println();
+
   int index = 0;
   uint8_t buffer[9];
   uint8_t byte1 = 0;
@@ -169,7 +175,7 @@ void SendBuffer(uint8_t buffer[], uint8_t length)
   for(; index < length; index++)
   {
     myPort.write(buffer[index]);
-    Serial.write(buffer[index]);
+    // Serial.write(buffer[index]);
   }
 }
 
@@ -186,11 +192,11 @@ void SendDebug()
 
 void SerialLoop()
 {
-  SendDebug();
+  // SendDebug();
   // SendAnswer();
 
   if (myPort.available() > 0) {
-    Serial.print("available");
+    // Serial.print("available");
     char character = myPort.read();
     Serial.print("received char: ");
     Serial.print((int) character);
