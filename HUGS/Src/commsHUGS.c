@@ -1,7 +1,7 @@
 /*
-* This file is part of the Hoverboard Utility Gateway System (HUGS) project. 
+* This file is part of the Hoverboard Utility Gateway System (HUGS) project.
 *
-* The HUGS project goal is to enable Hoverboards, or Hoverboard drive components 
+* The HUGS project goal is to enable Hoverboards, or Hoverboard drive components
 * to be re-purposed to provide low-cost mobility to other systems, such
 * as assistive devices for the disabled, general purpose robots or other
 * labor saving devices.
@@ -39,7 +39,7 @@
 #define USART_HUGS_TX_BYTES (HUGS_MAX_DATA + 8)  // Max buffeer size including
 #define USART_HUGS_RX_BYTES (HUGS_MAX_DATA + 8)  // start '/' and stop character '\n'
 
-static bool 	  sHUGSRecord = FALSE;
+static bool 	  sHUGSRecord = false; // MODIFIED lower case boolean
 
 extern uint8_t usartHUGS_rx_buf[USART_HUGS_RX_BUFFERSIZE];
 static uint8_t sUSARTHUGSRecordBuffer[USART_HUGS_RX_BYTES];
@@ -65,7 +65,7 @@ uint16_t CalcCRC(uint8_t *ptr, int count);
 void ShutOff(void);
 
 // Variables updated by HUGS Message
-bool			HUGS_ESTOP = FALSE;
+bool			HUGS_ESTOP = false; // MODIFIED lower case boolean
 uint16_t	HUGS_WatchDog = 1000 ; // TIMEOUT_MS;
 uint8_t	  HUGS_Destination = 0;
 uint8_t	  HUGS_Sequence = 0;
@@ -74,7 +74,7 @@ RSP_ID		HUGS_ResponseID = NOR;
 
 
 void SetESTOP(void) {
-	HUGS_ESTOP = TRUE;
+	HUGS_ESTOP = true; // MODIFIED lower case boolean
 }
 
 //----------------------------------------------------------------------------
@@ -84,12 +84,12 @@ void UpdateUSARTHUGSInput(void)
 {
 	uint8_t character = usartHUGS_rx_buf[0];
 	uint8_t length;
-	
+
 	// Start character is captured, start record
 	if (!sHUGSRecord && (character == '/'))
 	{
 		sUSARTHUGSRecordBufferCounter = 0;
-		sHUGSRecord = TRUE;
+		sHUGSRecord = true; // MODIFIED lower case boolean
 	}
 
 	// Process the new charcter
@@ -97,15 +97,15 @@ void UpdateUSARTHUGSInput(void)
 	{
 		sUSARTHUGSRecordBuffer[sUSARTHUGSRecordBufferCounter] = character;
 		sUSARTHUGSRecordBufferCounter++;
-		
+
 	  // Check to see if we know the length yet
 		if (sUSARTHUGSRecordBufferCounter > 1) {
-			
+
 			// Check for an invalid length, or a completed message
 			if ((length = sUSARTHUGSRecordBuffer[1]) > HUGS_MAX_DATA){
 				// Bad data length
 				sUSARTHUGSRecordBufferCounter = 0;
-				sHUGSRecord = FALSE;
+				sHUGSRecord = false; // MODIFIED lower case boolean
 			}
 			else if (sUSARTHUGSRecordBufferCounter >  (length + HUGS_EOM_OFFSET))
 			{
@@ -113,27 +113,27 @@ void UpdateUSARTHUGSInput(void)
 				if (CheckUSARTHUGSInput (sUSARTHUGSRecordBuffer)) {
 					// A complete message was found.  Reset buffer and status
 					sUSARTHUGSRecordBufferCounter = 0;
-					sHUGSRecord = FALSE;
+					sHUGSRecord = false; // MODIFIED lower case boolean
 				} else {
 					// Message was invalid.  it could have been a bad SOM
 					// check to see if the buffer holds another SOM (/)
 					int slider = 0;
 					int ch;
-					
+
 					for (ch = 1; ch < sUSARTHUGSRecordBufferCounter; ch++) {
 						if (sUSARTHUGSRecordBuffer[ch] == '/') {
 							slider = ch;
 							break;
 						}
 					}
-					
+
 					if (slider > 0) {
 						// push the buffer back
 						sUSARTHUGSRecordBufferCounter -= slider;
 						memcpy(sUSARTHUGSRecordBuffer, sUSARTHUGSRecordBuffer + slider, sUSARTHUGSRecordBufferCounter);
 					} else {
 						sUSARTHUGSRecordBufferCounter = 0;
-						sHUGSRecord = FALSE;
+						sHUGSRecord = false; // MODIFIED lower case boolean
 					}
 				}
 			}
@@ -148,31 +148,31 @@ bool CheckUSARTHUGSInput(uint8_t USARTBuffer[])
 {
 	// Auxiliary variables
 	uint16_t crc;
-	uint8_t	length = USARTBuffer[1];	
+	uint8_t	length = USARTBuffer[1];
 
 	// Check start and stop character
 	if ( USARTBuffer[0] != '/' ||
 		USARTBuffer[length + HUGS_EOM_OFFSET ] != '\n')
 	{
-		return FALSE;
+		return false; // MODIFIED lower case boolean
 	}
 
 	// Calculate CRC (first bytes up to, not including crc)
 	crc = CalcCRC(USARTBuffer, length + 5 );
-	
+
 	// Check CRC
 	if ( USARTBuffer[length + 5] != (crc & 0xFF) ||
 		   USARTBuffer[length + 6] != ((crc >> 8) & 0xFF) )
 	{
-		return FALSE;
+		return false; // MODIFIED lower case boolean
 	}
-	
+
 	// command is valid.  Process it now
 	HUGS_Destination  = USARTBuffer[2] & 0x0F;
 	HUGS_Sequence     = (USARTBuffer[2] >> 4) & 0x0F;
 	HUGS_CommandID		= (CMD_ID)USARTBuffer[3] ;
 	HUGS_ResponseID		= (RSP_ID)USARTBuffer[4] ;
-	
+
 	switch(HUGS_CommandID) {
 		case ENA:
 			SetEnable(SET);
@@ -181,9 +181,9 @@ bool CheckUSARTHUGSInput(uint8_t USARTBuffer[])
 		case DIS:
 			SetEnable(RESET);
 		  break;
-		
+
 		case POW:
-			SetEnable(SET);  
+			SetEnable(SET);
 			SetPower((int16_t)((uint16_t)USARTBuffer[6] << 8) +  (uint16_t)USARTBuffer[5]);
 		  break;
 
@@ -205,7 +205,7 @@ bool CheckUSARTHUGSInput(uint8_t USARTBuffer[])
 
 		case SPE:
 			// Set the constant Speed (in mm/s)
-			SetEnable(SET);  
+			SetEnable(SET);
 			SetSpeed((int16_t)((uint16_t)USARTBuffer[6] << 8) +  (uint16_t)USARTBuffer[5]);
 		  break;
 
@@ -224,11 +224,11 @@ bool CheckUSARTHUGSInput(uint8_t USARTBuffer[])
 	if (HUGS_ResponseID != NOR) {
 		SendHUGSReply();
 	}
-	
+
 	// Reset the pwm timout to avoid stopping motors
 	ResetTimeout();
-	
-	return TRUE;
+
+	return true; // MODIFIED lower case boolean
 }
 
 
@@ -244,7 +244,7 @@ void SendHUGSReply()
 	uint8_t bitStatus = HUGS_ESTOP ? 0x01 : 0x00;
 	int16_t tempInt = 0;
 	int32_t tempLong = 0;
-	
+
 	bitStatus |= (controlMode << 1);
 
 	buffer[0] = '/';
@@ -287,9 +287,9 @@ void SendHUGSReply()
 				tempInt = GetPWM();
 				buffer[6] = tempInt & 0xFF ;
 				buffer[7] = tempInt >> 8;
-		
+
 			break;
-		
+
 		case SDOG:
 			  length = 3;
 				buffer[6] = HUGS_WatchDog & 0xFF ;
@@ -300,7 +300,7 @@ void SendHUGSReply()
 			  length = 3;
 				buffer[6] = speedMode ;
 				buffer[7] = maxStepSpeed ;
-		
+
 			break;
 
 		case SFPI:
@@ -311,7 +311,7 @@ void SendHUGSReply()
 				buffer[9]  = outP >> 8;
 				buffer[10] = outI & 0xFF ;
 				buffer[11] = outI >> 8;
-		
+
 			break;
 
 		case SMOT:
@@ -321,7 +321,7 @@ void SendHUGSReply()
 
 				buffer[6] = realSpeedmmPS & 0xFF ;
 				buffer[7] = realSpeedmmPS >> 8;
-		
+
 				tempLong = positionMm;
 				buffer[8]  = (tempLong) & 0xFF;
 				buffer[9]  = (tempLong >>  8) & 0xFF;
@@ -341,25 +341,25 @@ void SendHUGSReply()
 	}
 
 	buffer[1] = length;
-	
+
 	// Calculate CRC
   crc = CalcCRC(buffer, length + 5);
   buffer[length + 5] = crc & 0xFF;
   buffer[length + 6] = (crc >> 8) & 0xFF;
 	buffer[length + 7] = '\n';
-	
+
 	SendBuffer(USART_HUGS, buffer, length + 8);
 }
 
 //----------------------------------------------------------------------------
 // Send command via USART (Presumably to SLAVE)
 //----------------------------------------------------------------------------
-void SendHUGSCmd(CMD_ID SlaveCmd, int16_t value) 
+void SendHUGSCmd(CMD_ID SlaveCmd, int16_t value)
 {
 	int8_t length = -1;
 	uint16_t crc = 0;
 	uint8_t buffer[USART_HUGS_TX_BYTES];
-	
+
 	switch(SlaveCmd) {
 		case SPE:
 			  length = 2;
@@ -382,14 +382,13 @@ void SendHUGSCmd(CMD_ID SlaveCmd, int16_t value)
 		buffer[2] = 0;
 		buffer[3] = SlaveCmd;
 		buffer[4] = NOR;
-		
+
 		// Calculate CRC
 		crc = CalcCRC(buffer, length + 5);
 		buffer[length + 5] = crc & 0xFF;
 		buffer[length + 6] = (crc >> 8) & 0xFF;
 		buffer[length + 7] = '\n';
-		
+
 		SendBuffer(USART_HUGS, buffer, length + 8);
 	}
 }
-

@@ -1,7 +1,7 @@
 /*
-* This file is part of the Hoverboard Utility Gateway System (HUGS) project. 
+* This file is part of the Hoverboard Utility Gateway System (HUGS) project.
 *
-* The HUGS project goal is to enable Hoverboards, or Hoverboard drive components 
+* The HUGS project goal is to enable Hoverboards, or Hoverboard drive components
 * to be re-purposed to provide low-cost mobility to other systems, such
 * as assistive devices for the disabled, general purpose robots or other
 * labor saving devices.
@@ -42,7 +42,7 @@
 
 extern uint8_t usartSteer_COM_rx_buf[USART_STEER_COM_RX_BUFFERSIZE];
 
-static bool 	 sSteerRecord = FALSE;
+static bool 	 sSteerRecord = false; // MODIFIED lower case boolean
 static uint8_t sUSARTSteerRecordBuffer[USART_STEER_RX_BYTES];
 static uint8_t sUSARTSteerRecordBufferCounter = 0;
 static uint8_t 	steerReply[USART_STEER_TX_BYTES] = {'/', '\n'};
@@ -60,13 +60,13 @@ void UpdateUSARTSteerInput(void)
 {
 	uint8_t character = usartSteer_COM_rx_buf[0];
 	uint8_t length;
-	
-	
+
+
 	// Start character is captured, start record
 	if (!sSteerRecord && (character == '/'))
 	{
 		sUSARTSteerRecordBufferCounter = 0;
-		sSteerRecord = TRUE;
+		sSteerRecord = true; // MODIFIED lower case boolean
 	}
 
 	// Process the new charcter
@@ -74,54 +74,54 @@ void UpdateUSARTSteerInput(void)
 	{
 		sUSARTSteerRecordBuffer[sUSARTSteerRecordBufferCounter] = character;
 		sUSARTSteerRecordBufferCounter++;
-		
+
 	  // Check to see if we know the length yet
 		if (sUSARTSteerRecordBufferCounter > 1) {
-			
+
 			// Check for an invalid length, or a completed message
 			if ((length = sUSARTSteerRecordBuffer[1]) > STEER_MAX_DATA){
 				// Bad data length
 				sUSARTSteerRecordBufferCounter = 0;
-				sSteerRecord = FALSE;
+				sSteerRecord = false; // MODIFIED lower case boolean
 			}
 			else if (sUSARTSteerRecordBufferCounter >  (length + STEER_EOM_OFFSET))
 			{
-				
+
 				// Check input using HUGS message processing
 				if (CheckUSARTSteerInput (sUSARTSteerRecordBuffer)) {
 
 					// FOR TEST PURPOSES
 					// SendBuffer(USART_STEER_COM, sUSARTSteerRecordBuffer, sUSARTSteerRecordBufferCounter);
-					
+
 					// A complete message was found.  Reset buffer and status
 					sUSARTSteerRecordBufferCounter = 0;
-					sSteerRecord = FALSE;
+					sSteerRecord = false; // MODIFIED lower case boolean
 				} else {
 					// Message was invalid.  it could have been a bad SOM
 					// check to see if the buffer holds another SOM (/)
 					int slider = 0;
 					int ch;
-					
+
 					for (ch = 1; ch < sUSARTSteerRecordBufferCounter; ch++) {
 						if (sUSARTSteerRecordBuffer[ch] == '/') {
 							slider = ch;
 							break;
 						}
 					}
-					
+
 					if (slider > 0) {
 						// push the buffer back
 						sUSARTSteerRecordBufferCounter -= slider;
 						memcpy(sUSARTSteerRecordBuffer, sUSARTSteerRecordBuffer + slider, sUSARTSteerRecordBufferCounter);
 					} else {
 						sUSARTSteerRecordBufferCounter = 0;
-						sSteerRecord = FALSE;
+						sSteerRecord = false; // MODIFIED lower case boolean
 					}
 				}
 			}
 		}
 	}
-	
+
 }
 
 //----------------------------------------------------------------------------
@@ -131,40 +131,40 @@ bool CheckUSARTSteerInput(uint8_t USARTBuffer[])
 {
 	// Auxiliary variables
 	uint16_t  crc;
-	uint8_t	  length = USARTBuffer[1];	
+	uint8_t	  length = USARTBuffer[1];
 	int16_t		turn_mmPS;
 	int16_t		left_mmPS;
 	int16_t		right_mmPS;
 	int16_t		smax;
 
-	
+
 	// Check start and stop character
 	if ( USARTBuffer[0] != '/' ||
 		USARTBuffer[length + STEER_EOM_OFFSET ] != '\n')
 	{
-		return FALSE;
+		return false; // MODIFIED lower case boolean
 	}
 
 	// Calculate CRC (first bytes up to, not including crc)
 	crc = CalcCRC(USARTBuffer, length + 5 );
-	
+
 	// Check CRC
 	if ( USARTBuffer[length + 5] != (crc & 0xFF) ||
 		   USARTBuffer[length + 6] != ((crc >> 8) & 0xFF) )
 	{
-		return FALSE;
+		return false; // MODIFIED lower case boolean
 	}
-	
+
 	// command is valid.  Process it now
 	Steer_CommandID		= (CMD_ID)USARTBuffer[3] ;
 	Steer_ResponseID	= (RSP_ID)USARTBuffer[4] ;
-	
+
 	switch(Steer_CommandID) {
 		case DSPE:
-	
+
 			// Set the constant Speed (in mm/s)
-			SetEnable(SET); 
-		
+			SetEnable(SET);
+
 			left_mmPS  = (int16_t)((uint16_t)USARTBuffer[6] << 8) +  (uint16_t)USARTBuffer[5];
 			right_mmPS = left_mmPS;
 
@@ -199,11 +199,11 @@ bool CheckUSARTSteerInput(uint8_t USARTBuffer[])
 
 	// Send keep-alive reply
 	SendBuffer(USART_STEER_COM, steerReply,  sizeof(steerReply));
-	
+
 	// Reset the pwm timout to avoid stopping motors
 	ResetTimeout();
-	
-	return TRUE;
+
+	return true; // MODIFIED lower case true
 }
 
 int16_t		max(int16_t a, int16_t b){

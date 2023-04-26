@@ -1,7 +1,7 @@
 /*
-* This file is part of the Hoverboard Utility Gateway System (HUGS) project. 
+* This file is part of the Hoverboard Utility Gateway System (HUGS) project.
 *
-* The HUGS project goal is to enable Hoverboards, or Hoverboard drive components 
+* The HUGS project goal is to enable Hoverboards, or Hoverboard drive components
 * to be re-purposed to provide low-cost mobility to other systems, such
 * as assistive devices for the disabled, general purpose robots or other
 * labor saving devices.
@@ -36,7 +36,7 @@ uint32_t   msTicks 		 = 0;
 uint32_t   sysTicks 	 = 0;
 uint32_t   driveSafeMs = 0;
 FlagStatus timedOut 	 = SET;
-bool	     msToggle 	 = FALSE;
+bool	     msToggle 	 = false; // MODIFIED lower case boolean
 
 extern FlagStatus activateWeakening;
 extern int16_t HUGS_WatchDog;
@@ -60,18 +60,18 @@ void ResetTimeout(void)
 //----------------------------------------------------------------------------
 // Timer13_Update_Handler
 // Is called when upcouting of timer13 is finished and the UPDATE-flag is set
-// -> period of timer13 running with 2kHz -> interrupt every 500 uS  
+// -> period of timer13 running with 2kHz -> interrupt every 500 uS
 //----------------------------------------------------------------------------
 void TIMER13_IRQHandler(void)
-{	
-	msToggle = msToggle ? FALSE : TRUE;
-	
+{
+	msToggle = msToggle ? false : true; // MODIFIED lower case booleans
+
 	if (msToggle) {
 		msTicks++;
 
 		// Update speed value
 		CalculateSpeed();
-		
+
 		if (driveSafeMs > HUGS_WatchDog)
 		{
 			// First timeout reset all process values
@@ -79,7 +79,7 @@ void TIMER13_IRQHandler(void)
 			{
 				SetPower(0);
 			}
-			
+
 			timedOut = SET;
 		}
 		else
@@ -103,7 +103,7 @@ void TIMER0_BRK_UP_TRG_COM_IRQHandler(void)
 {
 	// Start ADC conversion
 	adc_software_trigger_enable(ADC_REGULAR_CHANNEL);
-	
+
 	// Clear timer update interrupt flag
 	timer_interrupt_flag_clear(TIMER_BLDC, TIMER_INT_UP);
 }
@@ -117,15 +117,15 @@ void DMA_Channel0_IRQHandler(void)
 {
 	// Calculate motor PWMs
 	CalculateBLDC();
-	
+
 	#ifdef SLAVE
 	// Calculates RGB LED
 	CalculateLEDPWM();
 	#endif
-	
+
 	if (dma_interrupt_flag_get(DMA_CH0, DMA_INT_FLAG_FTF))
 	{
-		dma_interrupt_flag_clear(DMA_CH0, DMA_INT_FLAG_FTF);        
+		dma_interrupt_flag_clear(DMA_CH0, DMA_INT_FLAG_FTF);
 	}
 }
 
@@ -141,7 +141,7 @@ void DMA_Channel1_2_IRQHandler(void)
 	{
 		// Update USART steer input mechanism
 		UpdateUSARTSteerInput();
-		dma_interrupt_flag_clear(DMA_CH2, DMA_INT_FLAG_FTF);        
+		dma_interrupt_flag_clear(DMA_CH2, DMA_INT_FLAG_FTF);
 	}
 }
 
@@ -157,7 +157,7 @@ void DMA_Channel3_4_IRQHandler(void)
 	{
 		// Update USART master slave input mechanism
 		UpdateUSARTHUGSInput();
-		dma_interrupt_flag_clear(DMA_CH4, DMA_INT_FLAG_FTF);        
+		dma_interrupt_flag_clear(DMA_CH4, DMA_INT_FLAG_FTF);
 	}
 }
 
@@ -170,7 +170,7 @@ uint32_t millis()
 }
 
 //----------------------------------------------------------------------------
-// Delays number of mSec 
+// Delays number of mSec
 //----------------------------------------------------------------------------
 void Delay (uint32_t dlyTicks)
 {

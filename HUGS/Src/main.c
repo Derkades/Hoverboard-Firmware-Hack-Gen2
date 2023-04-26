@@ -1,7 +1,7 @@
 /*
-* This file is part of the Hoverboard Utility Gateway System (HUGS) project. 
+* This file is part of the Hoverboard Utility Gateway System (HUGS) project.
 *
-* The HUGS project goal is to enable Hoverboards, or Hoverboard drive components 
+* The HUGS project goal is to enable Hoverboards, or Hoverboard drive components
 * to be re-purposed to provide low-cost mobility to other systems, such
 * as assistive devices for the disabled, general purpose robots or other
 * labor saving devices.
@@ -44,12 +44,13 @@
 #include "stdio.h"
 #include "stdlib.h"
 #include "string.h"
-#include <math.h>     
+#include "stdbool.h" // MODIFIED added include
+#include <math.h>
 
 FlagStatus activateWeakening = RESET;			// global variable for weakening
-			
+
 extern uint16_t batteryVoltagemV;					// global variable for battery voltage
-	
+
 extern FlagStatus timedOut;								// Timeoutvariable set by timeout timer
 
 extern bool			HUGS_ESTOP;
@@ -70,35 +71,35 @@ int main (void)
 	//SystemClock_Config();
   SystemCoreClockUpdate();
   SysTick_Config(SystemCoreClock / 100);
-	
+
 	// Init watchdog
 	if (Watchdog_init() == ERROR)
 	{
 		// If an error accours with watchdog initialization do not start device
 		while(1);
 	}
-	
+
 	// Init Interrupts
 	Interrupt_init();
-	
+
 	// Init timeout timer
 	TimeoutTimer_init();
-	
+
 	// Init GPIOs
 	GPIO_init();
-	
+
 	// Activate self hold direct after GPIO-init
 	gpio_bit_write(SELF_HOLD_PORT, SELF_HOLD_PIN, SET);
 
 	// Init usart master slave
 	USART_HUGS_init();
-	
+
 	// Init ADC
 	ADC_init();
-	
+
 	// Init PWM
 	PWM_init();
-	
+
 	// Device has 1,6 seconds to do all the initialization
 	// afterwards watchdog will be fired
 	fwdgt_counter_reload();
@@ -118,7 +119,7 @@ int main (void)
 		// Reload watchdog while button is pressed
 		fwdgt_counter_reload();
 	}
-	
+
   while(1)
 	{
 		// Shut device if ESTOP requested or when button is pressed
@@ -129,13 +130,13 @@ int main (void)
 
 		// Shut off device after INACTIVITY_TIMEOUT in minutes
     if (inactivityTimer++ > INACTIVITY_COUNTER)
-		{ 
+		{
       ShutOff();
-    } else if (inactivityTimer > INACTIVITY_WARNING) { 
+    } else if (inactivityTimer > INACTIVITY_WARNING) {
 			buzzerFreq = 8;
       buzzerPattern = 8;
     } else {
-		
+
 			// Show green battery symbol when battery level BAT_LOW_LVL1 is reached
 			if (batteryVoltagemV > BAT_LOW_LVL1_MV)
 			{
@@ -167,7 +168,7 @@ int main (void)
 
 
 		Delay(DELAY_IN_MAIN_LOOP);
-		
+
 		// Reload watchdog (watchdog fires after 1,6 seconds)
 		fwdgt_counter_reload();
   }
@@ -183,14 +184,14 @@ void ShutOff(void)
 
 	// Reload watchdog (watchdog fires after 1,6 seconds)
 	fwdgt_counter_reload();
-	
+
 	// Ensure that drive is off and estop status set.
 	SetPWM(0);
-	HUGS_ESTOP   = TRUE;	
+	HUGS_ESTOP   = true; // MODIFIED lower case true
 	SetEnable(RESET);
 	SendHUGSReply();			// Transfer ESTOP to Controller
 	SendHUGSCmd(XXX, 0);	// Tell possible slave to stop as well.
-	
+
 
 	// Play shutdown sound
 	for (index = 0; index < 8; index++)
@@ -202,7 +203,7 @@ void ShutOff(void)
 
 	// Disable usart
 	usart_deinit(USART_HUGS);
-	
+
 	// Turn off power
 	gpio_bit_write(SELF_HOLD_PORT, SELF_HOLD_PIN, RESET);
 	while(1)
